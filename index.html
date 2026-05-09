@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="J.A.R.V.I.S">
+<title>J.A.R.V.I.S — Tony's Survival Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700;900&family=JetBrains+Mono:wght@300;400;500;700&family=Noto+Sans+JP:wght@300;400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg-deep: #03070d;
+    --bg-mid: #061018;
+    --panel: rgba(8, 22, 36, 0.55);
+    --panel-edge: rgba(0, 229, 255, 0.18);
+    --cyan: #00e5ff;
+    --cyan-dim: #2a8aa8;
+    --cyan-glow: rgba(0, 229, 255, 0.35);
+    --amber: #ff9d2f;
+    --amber-glow: rgba(255, 157, 47, 0.45);
+    --crimson: #ff3a4c;
+    --green: #5cffb4;
+    --text: #cfeefb;
+    --text-dim: #6e8fa3;
+    --text-faint: #3a566a;
+    --grid-line: rgba(0, 229, 255, 0.08);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { background: var(--bg-deep); color: var(--text); font-family: 'Noto Sans JP', sans-serif; -webkit-font-smoothing: antialiased; overflow-x: hidden; }
+  body {
+    min-height: 100vh;
+    background:
+      radial-gradient(ellipse at 20% 0%, rgba(0,229,255,0.08), transparent 50%),
+      radial-gradient(ellipse at 80% 100%, rgba(255,157,47,0.06), transparent 50%),
+      linear-gradient(180deg, var(--bg-deep) 0%, var(--bg-mid) 100%);
+    background-attachment: fixed;
+    position: relative;
+    padding: 0 16px 80px;
+  }
+  body::before {
+    content: '';
+    position: fixed; inset: 0;
+    background-image:
+      linear-gradient(var(--grid-line) 1px, transparent 1px),
+      linear-gradient(90deg, var(--grid-line) 1px, transparent 1px);
+    background-size: 48px 48px;
+    pointer-events: none;
+    z-index: 0;
+    opacity: 0.5;
+  }
+  body::after {
+    content: '';
+    position: fixed; inset: 0;
+    background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,229,255,0.012) 2px, rgba(0,229,255,0.012) 4px);
+    pointer-events: none;
+    z-index: 1;
+  }
+  .container { position: relative; z-index: 2; max-width: 720px; margin: 0 auto; }
+  .hud-header {
+    padding: 28px 0 20px;
+    display: flex; flex-direction: column; align-items: center;
+    border-bottom: 1px solid var(--panel-edge);
+    margin-bottom: 24px;
+    position: relative;
+  }
+  .hud-header::after {
+    content: ''; position: absolute; bottom: -1px; left: 50%; transform: translateX(-50%);
+    width: 60%; height: 2px;
+    background: linear-gradient(90deg, transparent, var(--cyan), transparent);
+    box-shadow: 0 0 12px var(--cyan-glow);
+  }
+  .brand-line {
+    font-family: 'Orbitron', sans-serif; font-weight: 900;
+    font-size: 22px; letter-spacing: 0.4em;
+    color: var(--cyan);
+    text-shadow: 0 0 12px var(--cyan-glow);
+  }
+  .brand-sub {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px; letter-spacing: 0.3em;
+    color: var(--text-dim);
+    margin-top: 6px;
+    text-transform: uppercase;
+  }
+  .greet {
+    margin-top: 18px;
+    font-family: 'Noto Sans JP', sans-serif;
+    font-size: 15px; color: var(--text);
+    text-align: center;
+  }
+  .greet b { color: var(--amber); font-weight: 500; }
+  .timestamp {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px; color: var(--text-faint);
+    margin-top: 8px; letter-spacing: 0.15em;
+  }
+  .panel {
+    background: var(--panel);
+    border: 1px solid var(--panel-edge);
+    border-radius: 4px;
+    padding: 18px 18px 20px;
+    margin-bottom: 18px;
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    position: relative;
+    transition: all 0.25s ease;
+  }
+  .panel::before {
+    content: ''; position: absolute; top: 0; left: 0; width: 12px; height: 12px;
+    border-top: 2px solid var(--cyan); border-left: 2px solid var(--cyan);
+  }
+  .panel::after {
+    content: ''; position: absolute; bottom: 0; right: 0; width: 12px; height: 12px;
+    border-bottom: 2px solid var(--cyan); border-right: 2px solid var(--cyan);
+  }
+  .panel.amber-accent::before, .panel.amber-accent::after {
+    border-color: var(--amber);
+  }
+  .panel-head {
+    display: flex; justify-content: space-between; align-items: baseline;
+    margin-bottom: 14px;
+    border-bottom: 1px dashed var(--panel-edge);
+    padding-bottom: 8px;
+  }
+  .panel-title {
+    font-family: 'Orbitron', sans-serif; font-weight: 700;
+    font-size: 11px; letter-spacing: 0.25em;
+    color: var(--cyan);
+    text-transform: uppercase;
+  }
+  .panel-id {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px; color: var(--text-faint);
+    letter-spacing: 0.1em;
+  }
+  .amber-accent .panel-title { color: var(--amber); }
+  .creed-list { display: flex; flex-direction: column; gap: 8px; }
+  .creed-item {
+    display: flex; align-items: center; gap: 10px;
+    font-size: 13px; color: var(--text);
+    padding: 6px 0;
+  }
+  .creed-num {
+    font-family: 'Orbitron', sans-serif; font-weight: 700;
+    font-size: 10px; color: var(--amber);
+    min-width: 28px;
+    border-right: 1px solid var(--panel-edge);
+    padding-right: 8px;
+  }
+  .score-row { margin-bottom: 14px; }
+  .score-row:last-child { margin-bottom: 0; }
+  .score-label {
+    display: flex; justify-content: space-between;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px; color: var(--text-dim);
+    margin-bottom: 6px;
+    letter-spacing: 0.05em;
+  }
+  .score-label .val { color: var(--cyan); font-weight: 700; }
+  .score-label .val.pending { color: var(--text-faint); font-style: italic; }
+  .bar {
+    height: 6px; background: rgba(0,229,255,0.08);
+    border-radius: 1px; overflow: hidden; position: relative;
+  }
+  .bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--cyan-dim), var(--cyan));
+    box-shadow: 0 0 8px var(--cyan-glow);
+    width: 0;
+    transition: width 1.2s cubic-bezier(.2,.8,.2,1);
+  }
+  .bar-fill.pending {
+    background: repeating-linear-gradient(45deg, var(--text-faint), var(--text-faint) 4px, transparent 4px, transparent 8px);
+    box-shadow: none;
+  }
+  .score-note {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px; color: var(--text-faint); margin-top: 4px;
+    letter-spacing: 0.05em;
+  }
+  .step-list { list-style: none; }
+  .step-item {
+    display: flex; gap: 12px; padding: 10px 0;
+    border-bottom: 1px dashed var(--panel-edge);
+    font-size: 13px;
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+  .step-item:last-child { border-bottom: none; }
+  .step-item:hover { background: rgba(0,229,255,0.04); }
+  .step-check {
+    width: 18px; height: 18px; flex-shrink: 0;
+    border: 1.5px solid var(--cyan);
+    border-radius: 2px;
+    margin-top: 1px;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.2s;
+  }
+  .step-item.done .step-check {
+    background: var(--cyan); box-shadow: 0 0 10px var(--cyan-glow);
+  }
+  .step-item.done .step-check::after {
+    content: '✓'; color: var(--bg-deep); font-weight: 700; font-size: 12px;
+  }
+  .step-item.done .step-text { text-decoration: line-through; color: var(--text-faint); }
+  .step-text { flex: 1; line-height: 1.5; }
+  .step-meta {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px; color: var(--text-dim);
+    margin-top: 3px;
+    letter-spacing: 0.05em;
+  }
+  .priority-tag {
+    display: inline-block;
+    font-family: 'Orbitron', sans-serif; font-size: 9px; font-weight: 700;
+    padding: 2px 6px;
+    border: 1px solid; border-radius: 2px;
+    margin-right: 6px;
+    letter-spacing: 0.15em;
+  }
+  .priority-tag.high { color: var(--crimson); border-color: var(--crimson); }
+  .priority-tag.medium { color: var(--amber); border-color: var(--amber); }
+  .priority-tag.low { color: var(--text-dim); border-color: var(--text-dim); }
+  .card-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .stat-tile {
+    background: rgba(0,229,255,0.03);
+    border: 1px solid var(--panel-edge);
+    padding: 12px 10px;
+    text-align: center;
+  }
+  .stat-num {
+    font-family: 'Orbitron', sans-serif; font-weight: 900;
+    font-size: 28px; color: var(--cyan);
+    text-shadow: 0 0 8px var(--cyan-glow);
+    line-height: 1;
+  }
+  .stat-num.amber { color: var(--amber); text-shadow: 0 0 8px var(--amber-glow); }
+  .stat-num.dim { color: var(--text-dim); text-shadow: none; }
+  .stat-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px; color: var(--text-dim);
+    margin-top: 6px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+  .empty-state {
+    text-align: center; padding: 24px 12px;
+    color: var(--text-faint);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.1em;
+  }
+  .empty-state .icon { font-size: 24px; margin-bottom: 8px; opacity: 0.5; }
+  .empty-state .hint { color: var(--text-dim); margin-top: 8px; font-size: 10px; }
+  .thermo-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 14px; }
+  .thermo-cell { text-align: center; padding: 10px; background: rgba(0,229,255,0.03); border: 1px solid var(--panel-edge); }
+  .thermo-label { font-family: 'JetBrains Mono', monospace; font-size: 9px; color: var(--text-dim); letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 8px; }
+  .thermo-scale { display: flex; justify-content: space-between; gap: 4px; }
+  .thermo-dot {
+    flex: 1; height: 8px;
+    background: rgba(255,157,47,0.1); border: 1px solid rgba(255,157,47,0.3);
+    cursor: pointer; transition: all 0.2s;
+  }
+  .thermo-dot.active { background: var(--amber); box-shadow: 0 0 8px var(--amber-glow); }
+  .thermo-dot:hover { background: rgba(255,157,47,0.4); }
+  .section-divider {
+    margin: 28px 0 18px;
+    display: flex; align-items: center; gap: 12px;
+  }
+  .section-divider .label {
+    font-family: 'Orbitron', sans-serif; font-weight: 700;
+    font-size: 10px; color: var(--text-dim);
+    letter-spacing: 0.3em; text-transform: uppercase;
+  }
+  .section-divider .line {
+    flex: 1; height: 1px;
+    background: linear-gradient(90deg, var(--panel-edge), transparent);
+  }
+  .footer {
+    margin-top: 32px;
+    text-align: center;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    color: var(--text-faint);
+    letter-spacing: 0.2em;
+  }
+  .pulse {
+    display: inline-block; width: 6px; height: 6px;
+    background: var(--green); border-radius: 50%;
+    box-shadow: 0 0 8px var(--green);
+    margin-right: 6px;
+    animation: pulse 2s infinite;
+  }
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.3; }
+  }
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(12px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .panel { animation: fadeUp 0.6s backwards; }
+  .panel:nth-child(1) { animation-delay: 0.05s; }
+  .panel:nth-child(2) { animation-delay: 0.15s; }
+  .panel:nth-child(3) { animation-delay: 0.25s; }
+  .panel:nth-child(4) { animation-delay: 0.35s; }
+  .panel:nth-child(5) { animation-delay: 0.45s; }
+  .panel:nth-child(6) { animation-delay: 0.55s; }
+</style>
+</head>
+<body>
+<div class="container">
+  <header class="hud-header">
+    <div class="brand-line">J.A.R.V.I.S</div>
+    <div class="brand-sub">Just A Rather Very Intelligent System</div>
+    <div class="greet" id="greet">待機中でございます、<b>トニー様</b>。</div>
+    <div class="timestamp" id="timestamp">システム時刻 — 取得中...</div>
+  </header>
+  <section class="panel amber-accent">
+    <div class="panel-head">
+      <div class="panel-title">⚔ 基本理念 / IRON CREED</div>
+      <div class="panel-id">DOC-00</div>
+    </div>
+    <div class="creed-list">
+      <div class="creed-item"><span class="creed-num">01</span>家族との時間を死守</div>
+      <div class="creed-item"><span class="creed-num">02</span>残業ゼロ</div>
+      <div class="creed-item"><span class="creed-num">03</span>土日祝休み</div>
+      <div class="creed-item"><span class="creed-num">04</span>豊川IC 1時間圏内</div>
+      <div class="creed-item"><span class="creed-num">05</span>手取り30万円以上</div>
+    </div>
+    <div class="score-note" style="margin-top:14px; font-style:italic;">
+      ▸ 起業家ではなく「最先端技術を使いこなす超効率的な実務家」
+    </div>
+  </section>
+  <section class="panel">
+    <div class="panel-head">
+      <div class="panel-title">▣ フェーズ進捗 / Phase Status</div>
+      <div class="panel-id">90-DAY-PLAN</div>
+    </div>
+    <div style="font-family:'Orbitron',sans-serif; font-size:14px; color:var(--cyan); margin-bottom:12px; letter-spacing:0.1em;">
+      Phase 1 / Week 1 — <span style="color:var(--green)">完了</span>
+    </div>
+    <div class="card-grid">
+      <div class="stat-tile"><div class="stat-num">3</div><div class="stat-label">完了カード</div></div>
+      <div class="stat-tile"><div class="stat-num amber">1</div><div class="stat-label">進行中</div></div>
+      <div class="stat-tile"><div class="stat-num dim">1</div><div class="stat-label">却下／見送り</div></div>
+      <div class="stat-tile"><div class="stat-num">5/12</div><div class="stat-label">目標カード数</div></div>
+    </div>
+  </section>
+  <section class="panel">
+    <div class="panel-head">
+      <div class="panel-title">⏧ スコア / Vital Metrics</div>
+      <div class="panel-id">METRIC-01</div>
+    </div>
+    <div class="score-row">
+      <div class="score-label"><span>AIスキル指数</span><span class="val pending">PHASE 2 確定待ち</span></div>
+      <div class="bar"><div class="bar-fill pending" style="width:100%"></div></div>
+      <div class="score-note">▸ 狙い撃ち30社の求人頻出スキルで客観算出（未着手）</div>
+    </div>
+    <div class="score-row">
+      <div class="score-label"><span>ポートフォリオ充実度</span><span class="val">42%</span></div>
+      <div class="bar"><div class="bar-fill" data-target="42"></div></div>
+      <div class="score-note">▸ 5カード / 目標12カード（Day90到達点）</div>
+    </div>
+    <div class="score-row">
+      <div class="score-label"><span>市場準備度</span><span class="val">25%</span></div>
+      <div class="bar"><div class="bar-fill" data-target="25"></div></div>
+      <div class="score-note">▸ 棚卸し開始段階／職務経歴書未着手／市場偵察未着手</div>
+    </div>
+  </section>
+  <section class="panel">
+    <div class="panel-head">
+      <div class="panel-title">▶ 今週の次手 / NEXT STEP</div>
+      <div class="panel-id">QUEUE-W2</div>
+    </div>
+    <ul class="step-list" id="stepList">
+      <li class="step-item" data-id="ns-001">
+        <div class="step-check"></div>
+        <div>
+          <div class="step-text">Card #001-005 各カードに数字を1つずつ追加</div>
+          <div class="step-meta"><span class="priority-tag high">最優先</span>所要 30分 ／ トニー様 手作業</div>
+        </div>
+      </li>
+      <li class="step-item" data-id="ns-002">
+        <div class="step-check"></div>
+        <div>
+          <div class="step-text">v1ポートフォリオの赤入れ（事実誤認・追加情報）</div>
+          <div class="step-meta"><span class="priority-tag high">最優先</span>所要 5分 ／ トニー様 手作業</div>
+        </div>
+      </li>
+      <li class="step-item" data-id="ns-003">
+        <div class="step-check"></div>
+        <div>
+          <div class="step-text">職務経歴書 v1 ドラフト作成</div>
+          <div class="step-meta"><span class="priority-tag medium">中優先</span>JARVIS起草／トニー様は確認のみ</div>
+        </div>
+      </li>
+    </ul>
+  </section>
+  <section class="panel amber-accent">
+    <div class="panel-head">
+      <div class="panel-title">♨ メンタル温度計 / Pulse Check</div>
+      <div class="panel-id">SIGNAL-04</div>
+    </div>
+    <div class="thermo-grid">
+      <div class="thermo-cell">
+        <div class="thermo-label">組織カオス度</div>
+        <div class="thermo-scale" data-key="chaos">
+          <div class="thermo-dot" data-val="1"></div>
+          <div class="thermo-dot" data-val="2"></div>
+          <div class="thermo-dot" data-val="3"></div>
+          <div class="thermo-dot" data-val="4"></div>
+          <div class="thermo-dot" data-val="5"></div>
+        </div>
+      </div>
+      <div class="thermo-cell">
+        <div class="thermo-label">自分の余裕度</div>
+        <div class="thermo-scale" data-key="self">
+          <div class="thermo-dot" data-val="1"></div>
+          <div class="thermo-dot" data-val="2"></div>
+          <div class="thermo-dot" data-val="3"></div>
+          <div class="thermo-dot" data-val="4"></div>
+          <div class="thermo-dot" data-val="5"></div>
+        </div>
+      </div>
+    </div>
+    <div class="score-note" style="text-align:center;">▸ 週末にタップで記録／戦略判断データとして蓄積</div>
+  </section>
+  <div class="section-divider">
+    <div class="line"></div>
+    <div class="label">偵察チャンネル</div>
+    <div class="line"></div>
+  </div>
+  <section class="panel">
+    <div class="panel-head">
+      <div class="panel-title">▼ 転職候補マッチ / Lifeboats</div>
+      <div class="panel-id">RECON-02</div>
+    </div>
+    <div class="empty-state">
+      <div class="icon">⊙</div>
+      <div>偵察未着手</div>
+      <div class="hint">▸ Phase 2（Day 31-60）で東三河DX企業30社をスキャン予定</div>
+    </div>
+  </section>
+  <section class="panel">
+    <div class="panel-head">
+      <div class="panel-title">$ 副収入 / Passive Stream</div>
+      <div class="panel-id">RECON-03</div>
+    </div>
+    <div class="empty-state">
+      <div class="icon">⌛</div>
+      <div>待機中</div>
+      <div class="hint">▸ Phase 3（Day 61-90）で軽量版から起動予定</div>
+    </div>
+  </section>
+  <section class="panel">
+    <div class="panel-head">
+      <div class="panel-title">⚡ AI最新ニュース / Intel Feed</div>
+      <div class="panel-id">RECON-05</div>
+    </div>
+    <div class="empty-state">
+      <div class="icon">⌬</div>
+      <div>フィード停止中</div>
+      <div class="hint">▸ 次回チャットでJarvisが週次まとめを起草</div>
+    </div>
+  </section>
+  <div class="footer">
+    <span class="pulse"></span>JARVIS 稼働中 ／ 90日防衛プロトコル 起動中
+    <div style="margin-top:8px;">DASHBOARD v0.1 ／ データソース: GOOGLE DRIVE</div>
+  </div>
+</div>
+<script>
+  const greetEl = document.getElementById('greet');
+  const greetings = {
+    morning:   ['おはようございます、<b>トニー様</b>。', '本日も起動いたしました、<b>トニー様</b>。'],
+    daytime:   ['お呼びとあらば、<b>トニー様</b>。', '待機中でございます、<b>トニー様</b>。'],
+    evening:   ['お帰りなさいませ、<b>トニー様</b>。', '本日もお疲れさまです、<b>トニー様</b>。'],
+    lateNight: ['まだお仕事中でございますか、<b>トニー様</b>。', '深夜の起動を確認、<b>トニー様</b>。']
+  };
+  function pickGreeting() {
+    const h = new Date().getHours();
+    let bucket;
+    if (h >= 5 && h < 11) bucket = 'morning';
+    else if (h >= 11 && h < 18) bucket = 'daytime';
+    else if (h >= 18 && h < 23) bucket = 'evening';
+    else bucket = 'lateNight';
+    const arr = greetings[bucket];
+    return arr[Math.floor(Math.random() * arr.length)];
+  }
+  greetEl.innerHTML = pickGreeting();
+  function updateTime() {
+    const now = new Date();
+    const Y = now.getFullYear();
+    const M = String(now.getMonth() + 1).padStart(2, '0');
+    const D = String(now.getDate()).padStart(2, '0');
+    const h = String(now.getHours()).padStart(2, '0');
+    const m = String(now.getMinutes()).padStart(2, '0');
+    const s = String(now.getSeconds()).padStart(2, '0');
+    document.getElementById('timestamp').textContent = `${Y}-${M}-${D} / ${h}:${m}:${s} JST`;
+  }
+  updateTime();
+  setInterval(updateTime, 1000);
+  window.addEventListener('load', () => {
+    setTimeout(() => {
+      document.querySelectorAll('.bar-fill[data-target]').forEach(el => {
+        el.style.width = el.dataset.target + '%';
+      });
+    }, 400);
+  });
+  document.querySelectorAll('.step-item').forEach(item => {
+    item.addEventListener('click', () => {
+      item.classList.toggle('done');
+    });
+  });
+  document.querySelectorAll('.thermo-scale').forEach(scale => {
+    const dots = scale.querySelectorAll('.thermo-dot');
+    dots.forEach(dot => {
+      dot.addEventListener('click', () => {
+        const val = parseInt(dot.dataset.val);
+        dots.forEach(d => {
+          d.classList.toggle('active', parseInt(d.dataset.val) <= val);
+        });
+      });
+    });
+  });
+</script>
+</body>
+</html>
