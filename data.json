@@ -1,0 +1,72 @@
+{
+  "lastUpdated": "2026-05-09T14:30:00+09:00",
+  "version": "1.0",
+  "phase": {
+    "current": "Phase 1 / Week 1",
+    "status": "完了",
+    "stats": {
+      "completed": 3,
+      "inProgress": 1,
+      "rejected": 1,
+      "total": 5,
+      "target": 12
+    }
+  },
+  "scores": {
+    "aiSkill": {
+      "value": null,
+      "displayText": "PHASE 2 確定待ち",
+      "note": "狙い撃ち30社の求人頻出スキルで客観算出（未着手）"
+    },
+    "portfolio": {
+      "value": 42,
+      "note": "5カード / 目標12カード（Day90到達点）"
+    },
+    "marketReadiness": {
+      "value": 25,
+      "note": "棚卸し開始段階／職務経歴書未着手／市場偵察未着手"
+    }
+  },
+  "nextSteps": [
+    {
+      "id": "ns-001",
+      "text": "Card #001-005 各カードに数字を1つずつ追加",
+      "priority": "high",
+      "priorityLabel": "最優先",
+      "meta": "所要 30分 ／ トニー様 手作業"
+    },
+    {
+      "id": "ns-002",
+      "text": "v1ポートフォリオの赤入れ",
+      "priority": "high",
+      "priorityLabel": "最優先",
+      "meta": "所要 5分 ／ トニー様 手作業"
+    },
+    {
+      "id": "ns-003",
+      "text": "職務経歴書 v1 ドラフト作成",
+      "priority": "medium",
+      "priorityLabel": "中優先",
+      "meta": "JARVIS起草／トニー様は確認のみ"
+    }
+  ],
+  "thermometer": { "lastEntry": null, "history": [] },
+  "lifeboats": {
+    "status": "standby",
+    "message": "偵察未着手",
+    "hint": "Phase 2（Day 31-60）で東三河DX企業30社をスキャン予定",
+    "items": []
+  },
+  "passiveStream": {
+    "status": "standby",
+    "message": "待機中",
+    "hint": "Phase 3（Day 61-90）で軽量版から起動予定",
+    "monthlyAmount": 0
+  },
+  "intelFeed": {
+    "status": "standby",
+    "message": "フィード停止中",
+    "hint": "次回チャットでJarvisが週次まとめを起草",
+    "items": []
+  }
+}
