@@ -8,6 +8,11 @@ Static, no-build dashboard: `index.html`, `jarvis-toolbox.html`, `data.json`.
 No package manager, no framework, no server. Keep it that way unless asked
 to change it — don't introduce a build step or framework for its own sake.
 
+This is a standalone app repo, not the master repo. Mission tracking,
+know-how, and cross-project operating rules (including repo strategy —
+when to add a new repo vs. use this one vs. use Founder_HQ) live in
+`ginloghouse007-creator/Founder_HQ`'s `JARVIS_HQ.md` and `CLAUDE.md`.
+
 ## Available subagents and commands
 
 A small, curated set imported from [ECC](https://github.com/affaan-m/ECC)
